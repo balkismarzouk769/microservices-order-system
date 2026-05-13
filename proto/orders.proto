@@ -1,0 +1,150 @@
+syntax = "proto3";
+
+package orders;
+
+
+// ======================================================
+// SERVICE
+// ======================================================
+
+service OrderService {
+
+    rpc GetOrders (Empty) returns (OrderList);
+
+    rpc GetOrderById (OrderRequest) returns (Order);
+
+    rpc GetOrdersByUserId (UserRequest) returns (OrderList);
+
+    rpc CreateOrder (CreateOrderRequest) returns (Order);
+
+    rpc UpdateOrder (UpdateOrderRequest) returns (MessageResponse);
+
+    rpc DeleteOrder (OrderRequest) returns (MessageResponse);
+
+    rpc CheckOrderExists (OrderRequest) returns (ExistsResponse);
+}
+
+
+
+// ======================================================
+// EMPTY
+// ======================================================
+
+message Empty {}
+
+
+
+// ======================================================
+// ORDER REQUEST
+// ======================================================
+
+message OrderRequest {
+
+    string id = 1;
+}
+
+
+
+// ======================================================
+// USER REQUEST
+// ======================================================
+
+message UserRequest {
+
+    int32 userId = 1;
+}
+
+
+
+// ======================================================
+// PRODUCT ITEM
+// ======================================================
+
+message ProductItem {
+
+    int32 productId = 1;
+
+    int32 quantity = 2;
+}
+
+
+
+// ======================================================
+// CREATE ORDER REQUEST
+// ======================================================
+
+message CreateOrderRequest {
+
+    int32 userId = 1;
+
+    repeated ProductItem products = 2;
+
+    double total = 3;
+}
+
+
+
+// ======================================================
+// UPDATE ORDER REQUEST
+// ======================================================
+
+message UpdateOrderRequest {
+
+    string id = 1;
+
+    int32 userId = 2;
+
+    repeated ProductItem products = 3;
+
+    double total = 4;
+}
+
+
+
+// ======================================================
+// ORDER
+// ======================================================
+
+message Order {
+
+    string id = 1;
+
+    int32 userId = 2;
+
+    repeated ProductItem products = 3;
+
+    double total = 4;
+}
+
+
+
+// ======================================================
+// ORDER LIST
+// ======================================================
+
+message OrderList {
+
+    repeated Order orders = 1;
+}
+
+
+
+// ======================================================
+// MESSAGE RESPONSE
+// ======================================================
+
+message MessageResponse {
+
+    string message = 1;
+}
+
+
+
+// ======================================================
+// EXISTS RESPONSE
+// ======================================================
+
+message ExistsResponse {
+
+    bool exists = 1;
+}

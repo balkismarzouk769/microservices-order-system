@@ -1,0 +1,133 @@
+syntax = "proto3";
+
+package products;
+
+
+// ======================================================
+// SERVICE
+// ======================================================
+
+service ProductService {
+
+    rpc GetProducts (Empty) returns (ProductList);
+
+    rpc GetProductById (ProductRequest) returns (Product);
+
+    rpc CreateProduct (CreateProductRequest) returns (Product);
+
+    rpc DeleteProduct (ProductRequest) returns (DeleteResponse);
+
+    rpc CheckProductExists (ProductRequest)
+    returns (ExistsResponse);
+
+    rpc UpdateStock (UpdateStockRequest)
+    returns (MessageResponse);
+}
+
+
+
+// ======================================================
+// EMPTY
+// ======================================================
+
+message Empty {}
+
+
+
+// ======================================================
+// PRODUCT REQUEST
+// ======================================================
+
+message ProductRequest {
+
+    int32 id = 1;
+}
+
+
+
+// ======================================================
+// CREATE PRODUCT REQUEST
+// ======================================================
+
+message CreateProductRequest {
+
+    string name = 1;
+
+    double price = 2;
+
+    int32 stock = 3;
+}
+
+
+
+// ======================================================
+// UPDATE STOCK REQUEST
+// ======================================================
+
+message UpdateStockRequest {
+
+    int32 productId = 1;
+
+    int32 quantity = 2;
+}
+
+
+
+// ======================================================
+// PRODUCT
+// ======================================================
+
+message Product {
+
+    int32 id = 1;
+
+    string name = 2;
+
+    double price = 3;
+
+    int32 stock = 4;
+}
+
+
+
+// ======================================================
+// PRODUCT LIST
+// ======================================================
+
+message ProductList {
+
+    repeated Product products = 1;
+}
+
+
+
+// ======================================================
+// DELETE RESPONSE
+// ======================================================
+
+message DeleteResponse {
+
+    string message = 1;
+}
+
+
+
+// ======================================================
+// MESSAGE RESPONSE
+// ======================================================
+
+message MessageResponse {
+
+    string message = 1;
+}
+
+
+
+// ======================================================
+// EXISTS RESPONSE
+// ======================================================
+
+message ExistsResponse {
+
+    bool exists = 1;
+}

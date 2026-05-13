@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package users;
+
+
+// SERVICE
+service UserService {
+
+    rpc GetUsers (Empty) returns (UserList);
+
+    rpc GetUserById (UserRequest) returns (User);
+
+    rpc CreateUser (CreateUserRequest) returns (User);
+
+    rpc DeleteUser (UserRequest) returns (DeleteResponse);
+
+    rpc CheckUserExists (UserRequest) returns (ExistsResponse);
+}
+
+
+// EMPTY
+message Empty {}
+
+
+// USER REQUEST
+message UserRequest {
+
+    int32 id = 1;
+}
+
+
+// CREATE USER REQUEST
+message CreateUserRequest {
+
+    string name = 1;
+
+    string email = 2;
+}
+
+
+// USER
+message User {
+
+    int32 id = 1;
+
+    string name = 2;
+
+    string email = 3;
+}
+
+
+// USER LIST
+message UserList {
+
+    repeated User users = 1;
+}
+
+
+// DELETE RESPONSE
+message DeleteResponse {
+
+    string message = 1;
+}
+
+
+// EXISTS RESPONSE
+message ExistsResponse {
+
+    bool exists = 1;
+}
