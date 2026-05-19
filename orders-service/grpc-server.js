@@ -9,11 +9,6 @@ const {
 } = require("./kafkaProducer");
 
 
-
-// ======================================================
-// LOAD ORDERS PROTO
-// ======================================================
-
 const packageDefinition = protoLoader.loadSync(
     "../proto/orders.proto"
 );
@@ -23,10 +18,6 @@ const proto = grpc.loadPackageDefinition(
 ).orders;
 
 
-
-// ======================================================
-// LOAD USERS PROTO
-// ======================================================
 
 const usersPackageDefinition = protoLoader.loadSync(
     "../proto/users.proto"
@@ -38,9 +29,6 @@ const usersProto = grpc.loadPackageDefinition(
 
 
 
-// ======================================================
-// LOAD PRODUCTS PROTO
-// ======================================================
 
 const productsPackageDefinition = protoLoader.loadSync(
     "../proto/products.proto"
@@ -52,9 +40,8 @@ const productsProto = grpc.loadPackageDefinition(
 
 
 
-// ======================================================
+
 // CREATE USERS CLIENT
-// ======================================================
 
 const usersClient = new usersProto.UserService(
     "localhost:50051",
@@ -63,9 +50,8 @@ const usersClient = new usersProto.UserService(
 
 
 
-// ======================================================
 // CREATE PRODUCTS CLIENT
-// ======================================================
+
 
 const productsClient = new productsProto.ProductService(
     "localhost:50052",
@@ -74,17 +60,11 @@ const productsClient = new productsProto.ProductService(
 
 
 
-// ======================================================
 // DATABASE
-// ======================================================
-
 let db;
 
-
-
-// ======================================================
 // GET ORDERS
-// ======================================================
+
 
 async function getOrders(call, callback) {
 
@@ -152,17 +132,28 @@ async function createOrder(call, callback) {
 
             async (userErr, userResponse) => {
 
-                if (userErr || !userResponse.exists) {
+                // USER SERVICE ERROR
+                if (userErr) {
 
-                    callback(null, {
-                        id: "",
-                        userId: 0,
-                        products: [],
-                        total: 0
+                    callback(userErr);
+
+                    return;
+                }
+
+
+
+                // USER NOT FOUND
+                if (!userResponse.exists) {
+
+                    callback({
+                        code: grpc.status.NOT_FOUND,
+                        message: "User not found"
                     });
 
                     return;
                 }
+
+
 
                 // ==========================================
                 // CHECK PRODUCTS + STOCK
@@ -170,7 +161,10 @@ async function createOrder(call, callback) {
 
                 for (const item of call.request.products) {
 
+                    // ======================================
                     // CHECK PRODUCT EXISTS
+                    // ======================================
+
                     const productExists = await new Promise((resolve) => {
 
                         productsClient.CheckProductExists(
@@ -185,19 +179,25 @@ async function createOrder(call, callback) {
                         );
                     });
 
+
+
+                    // PRODUCT NOT FOUND
                     if (!productExists) {
 
-                        callback(null, {
-                            id: "",
-                            userId: 0,
-                            products: [],
-                            total: 0
+                        callback({
+                            code: grpc.status.NOT_FOUND,
+                            message: "Product not found"
                         });
 
                         return;
                     }
 
+
+
+                    // ======================================
                     // GET PRODUCT
+                    // ======================================
+
                     const product = await new Promise((resolve) => {
 
                         productsClient.GetProductById(
@@ -212,19 +212,24 @@ async function createOrder(call, callback) {
                         );
                     });
 
+
+
+                    // ======================================
                     // CHECK STOCK
+                    // ======================================
+
                     if (product.stock < item.quantity) {
 
-                        callback(null, {
-                            id: "",
-                            userId: 0,
-                            products: [],
-                            total: 0
+                        callback({
+                            code: grpc.status.FAILED_PRECONDITION,
+                            message: "Insufficient stock"
                         });
 
                         return;
                     }
                 }
+
+
 
                 // ==========================================
                 // CREATE ORDER
@@ -241,9 +246,19 @@ async function createOrder(call, callback) {
                     total: call.request.total
                 };
 
+
+
                 await db.orders.insert(order);
 
+
+
+                // ==========================================
+                // SEND KAFKA EVENT
+                // ==========================================
+
                 await sendOrderCreatedEvent(order);
+
+
 
                 // ==========================================
                 // REDUCE STOCK
@@ -265,6 +280,9 @@ async function createOrder(call, callback) {
                     });
                 }
 
+
+
+                // SUCCESS
                 callback(null, order);
             }
         );
@@ -392,7 +410,9 @@ async function startServer() {
 
         () => {
 
-            console.log("gRPC Orders Service running on port 50053");
+            console.log(
+                "gRPC Orders Service running on port 50053"
+            );
 
             server.start();
         }

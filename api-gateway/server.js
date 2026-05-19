@@ -539,9 +539,10 @@ app.get("/orders/:id", (req, res) => {
 
 
 // GET ORDERS BY USER ID
-app.get("/users/:userId/orders", (req, res) => {
+app.get("/orders/user/:userId", (req, res) => {
 
     ordersClient.GetOrdersByUserId(
+
         {
             userId: parseInt(req.params.userId)
         },
@@ -664,6 +665,17 @@ app.get("/orders/:id/exists", (req, res) => {
             }
         }
     );
+});
+
+
+
+// ======================================================
+// ROOT ROUTE
+// ======================================================
+
+app.get("/", (req, res) => {
+
+    res.send("API Gateway running");
 });
 
 

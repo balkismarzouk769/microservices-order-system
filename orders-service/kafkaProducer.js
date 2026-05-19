@@ -23,7 +23,7 @@ async function connectProducer() {
 
 
 
-// SEND EVENT
+// SEND ORDER CREATED EVENT
 async function sendOrderCreatedEvent(order) {
 
     await producer.send({
@@ -38,7 +38,7 @@ async function sendOrderCreatedEvent(order) {
         ]
     });
 
-    console.log("Order Created Event Sent");
+    console.log("Order created event sent");
 }
 
 
